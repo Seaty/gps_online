@@ -1,0 +1,42 @@
+[
+  {
+    "order_id": "DTC000000001",
+    "prod_name": "กล่อง GPS",
+    "price": 4500,
+    "status": 3,
+    "amount": 1,
+    "order_time": "2021-04-02T11:00:00.000Z",
+    "paid_time": "2021-04-02T11:00:00.000Z",
+    "address": "17 หมู่ 6 ซ.ลาดพร้าว 101 ถ.ลาดพร้าว",
+    "tel": "0672340000",
+    "province": "กรุงเทพมหานคร",
+    "amphur": "ลาดพร้าว",
+    "tambon": "ลาดพร้าว",
+    "postcode": "10240",
+    "fullname": "สำกฤษ ชาบุญการันต์",
+    "reason": null,
+    "last_update": "2021-04-02T11:00:00.000Z",
+    "cancel_time": null,
+    "email": "xxxxx@mail.com"
+  },
+  {
+    "order_id": "DTC000000002",
+    "prod_name": "กล่อง GPS",
+    "price": 4500,
+    "status": 0,
+    "amount": 2,
+    "order_time": "2021-04-02T11:00:00.000Z",
+    "paid_time": "2021-04-02T11:00:00.000Z",
+    "address": "17 หมู่ 6 ซ.ลาดพร้าว 101 ถ.ลาดพร้าว",
+    "tel": "0672340000",
+    "province": "กรุงเทพมหานคร",
+    "amphur": "ลาดพร้าว",
+    "tambon": "ลาดพร้าว",
+    "postcode": "10240",
+    "fullname": "สำกฤษ ชาบุญการันต์",
+    "reason": "ลูกค้ายกเลิก",
+    "last_update": "2021-04-02T12:00:00.000Z",
+    "cancel_time": "2021-04-02T12:00:00.000Z",
+    "email": "xxxxx@mail.com"
+  }
+]
