@@ -282,6 +282,7 @@ class _SellGPSModalState extends State<SellGPSModal> {
                       return FutureBuilder(
                           future: fbCheck(),
                           builder: (context, snapshot) {
+                
                             if (snapshot.hasError) {
                               return AlertDialog(
                                 title: Text("Error"),

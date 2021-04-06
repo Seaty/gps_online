@@ -1,7 +1,8 @@
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:convert' as convert;
 import 'package:gps_selling/services/fb_model.dart';
 import 'package:flutter_facebook_auth/flutter_facebook_auth.dart';
+import 'package:query_params/query_params.dart';
 
 class Api {
   AccessToken accessToken;
@@ -19,7 +20,14 @@ class Api {
         }
         final fbdata = await FacebookAuth.instance.getUserData();
         FbData userData = FbData.fromJson(fbdata);
-        print("User ID : ${userData.id} , email : ${userData.email}");
+        var response =
+            await http.get("$_apiEndpoint/get_user_data?id=${userData.id}");
+        if (response.statusCode == 200) {
+          var userData = convert.jsonDecode(response.body);
+          print(userData);
+          return userData;
+        }
+        return "can't get user data";
       }
     } catch (e) {
       return "can't get user data";
@@ -36,13 +44,53 @@ class Api {
         accessToken = result.accessToken;
         FbData userData = FbData.fromJson(fbdata);
         print("User ID : ${userData.id} , email : ${userData.email}");
-        var saveResult = await http.post("$_apiEndpoint/check_fb_data",body: fbdata);
+        var saveResult = await http.post("$_apiEndpoint/check_fb_data", body: {
+          "id": userData.id,
+          "email": userData.email,
+          "fb_name": userData.name
+        });
+        print(saveResult);
         return true;
       }
       return false;
     } catch (e) {
       print(e);
       return false;
+    }
+  }
+
+  Future<List> getProvinceData() async {
+    try {
+      var response = await http.get("$_apiEndpoint/get_location_check");
+      if (response.statusCode == 200) {
+        List<dynamic> provinceList = convert.jsonDecode(response.body);
+        return provinceList;
+      } else {
+        return [];
+      }
+    } catch (e) {
+      print(e);
+      return [];
+    }
+  }
+
+  Future<dynamic> getSpecificLocation(
+      {String province, String amphur, String tambon}) async {
+    try {
+      URLQueryParams queryParams = new URLQueryParams();
+      if (province != null) queryParams.append("province", province);
+      if (amphur != null) queryParams.append("amphur", amphur);
+      if (tambon != null) queryParams.append("tambon", tambon);
+      var response =
+          await http.get("$_apiEndpoint/get_location_check?$queryParams");
+      if (response.statusCode == 200) {
+        var locationList = convert.jsonDecode(response.body);
+        return locationList;
+      }
+      return [];
+    } catch (e) {
+      print(e);
+      return [];
     }
   }
 }

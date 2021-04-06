@@ -37,14 +37,16 @@ dependencies:
   modal_bottom_sheet:
   custom_radio_grouped_button:
   get_it:
-  flutter_form_builder:
+  flutter_form_builder: ^5.0.0
   provider_architecture:
   provider:
   intl: ^0.17.0
   im_stepper: ^0.1.2+10
   flutter_facebook_auth: ^3.3.2
   http: ^0.12.2
-
+  query_params: ^0.6.1
+  file_picker: ^3.0.1
+  
 dev_dependencies:
   flutter_test:
     sdk: flutter
