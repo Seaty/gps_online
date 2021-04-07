@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 import 'package:file_picker/file_picker.dart';
@@ -19,8 +20,9 @@ class BuyMainPage extends StatefulWidget {
 
 class _BuyMainPageState extends State<BuyMainPage> {
   final _formKey = GlobalKey<FormBuilderState>();
-  File _chassisImage;
-  File _slipImage;
+  Uint8List _chassisImage;
+  Uint8List _slipImage;
+  String _slipErrorText;
 
   Future<bool> _onWillPopForm() async {
     return false;
@@ -36,10 +38,9 @@ class _BuyMainPageState extends State<BuyMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    print(widget.amount);
     return Scaffold(
       body: FutureBuilder(
-        future: getInitData(),
+        future: getInitData(amount),
         builder: (context, snapshot) {
           if (snapshot.hasError) {
             return Center(
@@ -380,10 +381,12 @@ class _BuyMainPageState extends State<BuyMainPage> {
                               // อ่านค่าจาก form _formKey.currentState.fields['fullname'].value;
                             },
                             // valueTransformer: (text) => num.tryParse(text),
-                            validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context),
-                              FormBuilderValidators.max(context, 70),
-                            ]),
+                            validator: (value) {
+                              if (value == null) {
+                                return "กรุณาระบุ ชื่อ-นามสกุล";
+                              }
+                              return null;
+                            },
                             keyboardType: TextInputType.name,
                           ),
                         ),
@@ -433,8 +436,10 @@ class _BuyMainPageState extends State<BuyMainPage> {
                             },
                             // valueTransformer: (text) => num.tryParse(text),
                             validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context),
-                              FormBuilderValidators.numeric(context),
+                              FormBuilderValidators.required(context,
+                                  errorText: "กรุณาระบุเบอร์โทรศัพท์"),
+                              FormBuilderValidators.numeric(context,
+                                  errorText: "กรุณาระบุเป็นตัวเลข"),
                             ]),
                             keyboardType: TextInputType.number,
                           ),
@@ -481,22 +486,21 @@ class _BuyMainPageState extends State<BuyMainPage> {
                               name: 'province',
                               showClearButton: true,
                               decoration: formBorder(screenWidth),
-                              validator: FormBuilderValidators.compose(
-                                  [FormBuilderValidators.required(context)]),
-                              items: provinceList
-                                  .map((province) => DropdownMenuItem(
-                                        value: province,
-                                        child: Text('$province'),
-                                      ))
-                                  .toList(),
-                              onChanged: (values) {
-                                _formKey.currentState.fields['province']
-                                    .didChange(values);
-                                _formKey.currentState.fields['amphur']
-                                    .didChange(null);
-                                _formKey.currentState.fields['tambon']
-                                    .didChange(null);
-                                onProvinceChange(values);
+                              validator: FormBuilderValidators.compose([
+                                FormBuilderValidators.required(context,
+                                    errorText: "กรุณาจังหวัด")
+                              ]),
+                              items: provinceList,
+                              onChanged: (values) async {
+                                if (values != null) {
+                                  _formKey.currentState.patchValue(
+                                      {"amphur": null, "tambon": null});
+
+                                  var result = await onProvinceChange(values);
+                                  if (result) {
+                                    setState(() {});
+                                  }
+                                }
                               }),
                         ),
                       ),
@@ -540,24 +544,26 @@ class _BuyMainPageState extends State<BuyMainPage> {
                           child: FormBuilderSearchableDropdown(
                             name: 'amphur',
                             decoration: formBorder(screenWidth),
+                            enabled: amphurList.length > 0,
                             showClearButton: true,
-                            validator: FormBuilderValidators.compose(
-                                [FormBuilderValidators.required(context)]),
-                            items: amphurList
-                                .map((amphur) => DropdownMenuItem(
-                                      value: amphur,
-                                      child: Text('$amphur'),
-                                    ))
-                                .toList(),
-                            onChanged: (value) {
-                              _formKey.currentState.fields['amphur']
-                                  .didChange(value);
-                              _formKey.currentState.fields['tambon']
-                                  .didChange(null);
-                              onAmphurChange(
-                                  _formKey
-                                      .currentState.fields['province'].value,
-                                  value);
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(context,
+                                  errorText: "กรุณาเลือกอำเภอ")
+                            ]),
+                            items: amphurList,
+                            onChanged: (value) async {
+                              if (value != null) {
+                                _formKey.currentState
+                                    .patchValue({"tambon": null});
+
+                                var result = await onAmphurChange(
+                                    _formKey
+                                        .currentState.fields['province'].value,
+                                    value);
+                                if (result) {
+                                  setState(() {});
+                                }
+                              }
                             },
                           ),
                         ),
@@ -602,25 +608,26 @@ class _BuyMainPageState extends State<BuyMainPage> {
                           child: FormBuilderSearchableDropdown(
                             name: 'tambon',
                             showClearButton: false,
+                            enabled: tambonList.length > 0,
                             decoration: formBorder(screenWidth),
-                            validator: FormBuilderValidators.compose(
-                                [FormBuilderValidators.required(context)]),
-                            items: tambonList
-                                .map((tambon) => DropdownMenuItem(
-                                      value: tambon,
-                                      child: Text('$tambon'),
-                                    ))
-                                .toList(),
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(context,
+                                  errorText: "กรุณาระบุรหัสไปรษณีย์")
+                            ]),
+                            items: tambonList,
                             onChanged: (value) async {
-                              var temp = await onTambonChange(
-                                  _formKey
-                                      .currentState.fields['province'].value,
-                                  _formKey.currentState.fields['amphur'].value,
-                                  value);
-                              setState(() {
-                                _formKey.currentState.fields['postcode']
-                                    .didChange(temp);
-                              });
+                              if (value != null) {
+                                var temp = await onTambonChange(
+                                    _formKey
+                                        .currentState.fields['province'].value,
+                                    _formKey
+                                        .currentState.fields['amphur'].value,
+                                    value);
+                                setState(() {
+                                  _formKey.currentState.fields['postcode']
+                                      .didChange(temp);
+                                });
+                              }
                             },
                           ),
                         ),
@@ -670,8 +677,8 @@ class _BuyMainPageState extends State<BuyMainPage> {
                             },
                             // valueTransformer: (text) => num.tryParse(text),
                             validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context),
-                              FormBuilderValidators.max(context, 70),
+                              FormBuilderValidators.required(context,
+                                  errorText: "กรุณาระบุที่อยู่"),
                             ]),
                             keyboardType: TextInputType.name,
                           ),
@@ -764,10 +771,12 @@ class _BuyMainPageState extends State<BuyMainPage> {
                                   // อ่านค่าจาก form _formKey.currentState.fields['fullname'].value;
                                 },
                                 // valueTransformer: (text) => num.tryParse(text),
-                                validator: FormBuilderValidators.compose([
-                                  FormBuilderValidators.required(context),
-                                  FormBuilderValidators.max(context, 70),
-                                ]),
+                                validator: (value) {
+                                  if (_chassisImage == null && value == null) {
+                                    return "กรุณาระบุเลชตัวถังรถ หรืออัพโหลดรูปตัวถังรถ";
+                                  }
+                                  return null;
+                                },
                                 keyboardType: TextInputType.name,
                               ),
                               Text(
@@ -784,6 +793,7 @@ class _BuyMainPageState extends State<BuyMainPage> {
                     ],
                   ),
                   Row(
+                    mainAxisAlignment: MainAxisAlignment.start,
                     children: [
                       Expanded(
                         flex: 1,
@@ -813,7 +823,7 @@ class _BuyMainPageState extends State<BuyMainPage> {
                           ),
                           child: FormBuilderField(
                               name: 'chassis_image',
-                              builder: (FormFieldState<File> field) {
+                              builder: (FormFieldState<Uint8List> field) {
                                 return ElevatedButton.icon(
                                   icon: svgLogo(
                                       checkscreenwidth(screenWidth, 25),
@@ -825,12 +835,12 @@ class _BuyMainPageState extends State<BuyMainPage> {
                                       type: FileType.image,
                                     );
                                     if (result != null) {
-                                      field.didChange(File.fromRawPath(
-                                          result.files.single.bytes));
+                                      field
+                                          .didChange(result.files.single.bytes);
 
                                       setState(() {
-                                        _chassisImage = File.fromRawPath(
-                                            result.files.single.bytes);
+                                        _chassisImage =
+                                            result.files.single.bytes;
                                       });
                                     }
                                   },
@@ -852,11 +862,26 @@ class _BuyMainPageState extends State<BuyMainPage> {
                         flex: 2,
                         child: Container(
                           child: _chassisImage != null
-                              ? Image.file(
-                                  _formKey.currentState.fields['chassis_image']
-                                      .value,
-                                  height: checkscreenwidth(screenWidth, 36.67),
-                                  width: checkscreenwidth(screenWidth, 36.67),
+                              ? Stack(
+                                  children: [
+                                    Image.memory(
+                                      _chassisImage,
+                                      height: checkscreenwidth(screenWidth, 11),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: IconButton(
+                                          icon: Icon(
+                                            Icons.close,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _chassisImage = null;
+                                            });
+                                          }),
+                                    )
+                                  ],
                                 )
                               : Text("ไม่มีรูปภาพ"),
                         ),
@@ -948,7 +973,12 @@ class _BuyMainPageState extends State<BuyMainPage> {
                               horizontal: checkscreenwidth(screenWidth, 220)),
                           child: FormBuilderField(
                             name: 'slip_image',
-                            builder: (FormFieldState<File> field) {
+                            validator: FormBuilderValidators.compose([
+                              FormBuilderValidators.required(context),
+                            ]),
+                            decoration:
+                                InputDecoration(errorText: _slipErrorText),
+                            builder: (FormFieldState<Uint8List> field) {
                               return ElevatedButton.icon(
                                 icon: svgLogo(checkscreenwidth(screenWidth, 25),
                                     "assets/icon/paper-clip.svg",
@@ -959,10 +989,10 @@ class _BuyMainPageState extends State<BuyMainPage> {
                                     type: FileType.image,
                                   );
                                   if (result != null) {
-                                    field.didChange(File.fromRawPath(
-                                        result.files.single.bytes));
-                                    _slipImage = File.fromRawPath(
-                                        result.files.single.bytes);
+                                    field.didChange(result.files.single.bytes);
+                                    setState(() {
+                                      _slipImage = result.files.single.bytes;
+                                    });
                                   }
                                 },
                                 label: Container(
@@ -984,11 +1014,26 @@ class _BuyMainPageState extends State<BuyMainPage> {
                         flex: 2,
                         child: Container(
                           child: _slipImage != null
-                              ? Image.file(
-                                  _formKey
-                                      .currentState.fields['slip_image'].value,
-                                  height: checkscreenwidth(screenWidth, 36.67),
-                                  width: checkscreenwidth(screenWidth, 36.67),
+                              ? Stack(
+                                  children: [
+                                    Image.memory(
+                                      _slipImage,
+                                      height: checkscreenwidth(screenWidth, 11),
+                                    ),
+                                    Align(
+                                      alignment: Alignment.topRight,
+                                      child: IconButton(
+                                          icon: Icon(
+                                            Icons.close,
+                                            color: Colors.red,
+                                          ),
+                                          onPressed: () {
+                                            setState(() {
+                                              _slipImage = null;
+                                            });
+                                          }),
+                                    )
+                                  ],
                                 )
                               : Text("ไม่มีรูปภาพ"),
                         ),
@@ -1038,8 +1083,10 @@ class _BuyMainPageState extends State<BuyMainPage> {
                             },
                             // valueTransformer: (text) => num.tryParse(text),
                             validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context),
-                              FormBuilderValidators.email(context)
+                              FormBuilderValidators.required(context,
+                                  errorText: "กรุณาระบุอีเมล"),
+                              FormBuilderValidators.email(context,
+                                  errorText: "รูปแบบอีเมลไม่ถูกต้อง")
                             ]),
                             keyboardType: TextInputType.emailAddress,
                           ),
@@ -1079,10 +1126,6 @@ class _BuyMainPageState extends State<BuyMainPage> {
                               // อ่านค่าจาก form _formKey.currentState.fields['fullname'].value;
                             },
                             // valueTransformer: (text) => num.tryParse(text),
-                            validator: FormBuilderValidators.compose([
-                              FormBuilderValidators.required(context),
-                              FormBuilderValidators.email(context)
-                            ]),
                             keyboardType: TextInputType.emailAddress,
                           ),
                         ),
@@ -1130,9 +1173,12 @@ class _BuyMainPageState extends State<BuyMainPage> {
                 margin: EdgeInsets.all(checkscreenwidth(screenWidth, 110)),
                 child: ElevatedButton(
                   onPressed: () {
-                    // final isValidate = _formKey.currentState.validate();
-                    // print(isValidate);
-                    Navigator.of(context).pushNamed(ConfirmOrderRoute);
+                    final isValidate = _formKey.currentState.saveAndValidate();
+                    print(isValidate);
+                    if (isValidate) {
+                      print(_formKey.currentState.value);
+                    }
+                    // Navigator.of(context).pushNamed(ConfirmOrderRoute);
                   },
                   child: Container(
                     margin:

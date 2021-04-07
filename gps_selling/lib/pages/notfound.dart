@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../locator.dart';
+import '../routing/router.dart';
+import '../services/navigation_service.dart';
+
 class NotfoundPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
@@ -10,8 +14,8 @@ class NotfoundPage extends StatelessWidget {
           children: [
             Text("ไม่พบหน้าที่คุณต้องการหา กรุณากลับไปยังหน้าหลัก"),
             TextButton(
-              onPressed: (){
-                Navigator.pop(context);
+              onPressed: () {
+                locator<NavigationService>().navigateTo(HomeRoute);
               },
               child: Text(
                 "กลับสู่หน้าหลัก",

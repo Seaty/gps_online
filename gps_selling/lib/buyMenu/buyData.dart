@@ -3,6 +3,9 @@ import 'package:gps_selling/homeMenu/homeData.dart';
 import 'package:gps_selling/locator.dart';
 import 'package:gps_selling/services/api.dart';
 
+import '../locator.dart';
+import '../services/navigation_service.dart';
+
 final _api = locator<Api>();
 
 List<dynamic> provinceList = [];
@@ -40,10 +43,16 @@ double radioHeight(double screenWidth) {
   return temp;
 }
 
-Future getInitData() async {
+Future getInitData(double amount) async {
   try {
     if (initUserData == null) {
-      initUserData = await _api.getUserData();
+      var temp = await _api.getUserData();
+      if (temp is String) {
+        locator<NavigationService>().goBack();
+      } else {
+        temp['amount'] = amount;
+        initUserData = temp;
+      }
     }
     if (provinceList.length == 0) {
       provinceList = await _api.getProvinceData();
@@ -58,15 +67,20 @@ Future getInitData() async {
 Future onProvinceChange(values) async {
   try {
     amphurList = await _api.getSpecificLocation(province: values);
-  } catch (e) {}
+    return true;
+  } catch (e) {
+    return false;
+  }
 }
 
 Future onAmphurChange(values, amphur) async {
   try {
     tambonList =
         await _api.getSpecificLocation(province: values, amphur: amphur);
+    return true;
   } catch (e) {
     print(e);
+    return false;
   }
 }
 
@@ -80,5 +94,3 @@ Future<dynamic> onTambonChange(province, amphur, tambon) async {
     return "";
   }
 }
-
-

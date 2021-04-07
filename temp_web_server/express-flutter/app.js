@@ -6,6 +6,7 @@ var logger = require("morgan");
 const serviceRouter = require("./api/index");
 var app = express();
 var cors = require("cors");
+const moment = require('moment')
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -15,7 +16,10 @@ app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
-
+app.use(function (req, res, next) {
+  console.log(moment().format("YYYY-MM-DD HH:mm:ss") + " :" + req.url);
+  next()
+});
 app.use("/", serviceRouter);
 app.use(express.static(path.join(__dirname, "public")));
 
