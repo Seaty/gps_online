@@ -1,4 +1,6 @@
 const pgcon = require("./newnode_pgconnection");
+const fs = require('fs')
+const baseImagePath = '/images'
 
 exports.fb_login = async (req, res) => {
   try {
@@ -20,7 +22,7 @@ exports.fb_login = async (req, res) => {
 exports.get_user_data = async (req, res) => {
   try {
     let id = req.query["id"];
-    let sql = `SELECT email, fullname ,tel ,address ,province ,amphur ,tambon ,postcode FROM user_master WHERE id = '${id}' `;
+    let sql = `SELECT id as fb_id ,email, fullname ,tel ,address ,province ,amphur ,tambon ,postcode FROM user_master WHERE id = '${id}' `;
     let r1 = await pgcon.get(sql);
     if (r1.code) {
       res.status(500).send(r1.message);
@@ -67,3 +69,80 @@ exports.get_location_check = async (req, res) => {
     res.status(500).send(error.message);
   }
 };
+
+
+exports.update_userdata = async (req, res, next) => {
+  try {
+    let { fullname, tel, fb_id, province, amphur, tambon, address, postcode, } = JSON.parse(req.body['data'])
+    let sqlcheck = `UPDATE user_master SET fullname = $1 , tel = $2 , address =$3 , province = $4 , amphur = $5 , tambon = $6, postcode = $7 WHERE id = $8 `
+    let r1 = await pgcon.excutewithparams(sqlcheck, [fullname, tel, address, province, amphur, tambon, postcode, fb_id])
+    if (r1.code) {
+      console.log(r1.message);
+      res.status(500).send('update user data error : ' + r1.message)
+    } else {
+      next()
+    }
+  } catch (error) {
+    res.status(500).send(error.message);
+  }
+}
+
+exports.create_new_order = async (req, res) => {
+  try {
+    let { slipimage, chassisimage } = req.files
+    let { fullname, tel, fb_id, province, amphur, tambon, address, postcode, amount, email } = JSON.parse(req.body['data'])
+    debugger
+    let sql_get = `SELECT indexs FROM index_master WHERE type = 'order_id'`
+    let r1 = await pgcon.get(sql_get)
+    if (r1.code) {
+      res.status(500).send('User error : get index error')
+    } else {
+      let newIndex = r1.data[0].indexs + 1
+      let orderId = 'DTC' + ("000000" + newIndex).slice(-6)
+      let sqlArr = []
+      let dataArr = []
+      let insert_sql = `INSERT INTO order_master(order_id,price,status,amount,address,tel,province,amphur,tambon,postcode,last_update,order_time,fullname,email)
+                        VALUES ($1,$12,$2,$3,$4,$5,$6,$7,$8,$9,NOW(),NOW(),$10,$11)`
+      let insert_data = [orderId, "1", amount, address, tel, province, amphur, tambon, postcode, fullname, email, 4500]
+      let update_index_sql = `UPDATE index_master SET indexs = indexs + 1 WHERE type = 'order_id'`
+      sqlArr = [insert_sql, update_index_sql]
+      dataArr = [insert_data, []]
+      let r2 = await pgcon.inserttransactionwithData(sqlArr, dataArr)
+      if (r2.code) {
+        res.status(500).send('Query error : ' + r2.message)
+      } else {
+        if (!fs.existsSync(`./api/images/${orderId}`)) {
+          fs.mkdirSync(`./api/images/${orderId}`);
+        }
+        if (chassisimage) {
+          var chassis_error = await chassisimage.mv(__dirname + baseImagePath + `/${orderId}/${slipimage.name}`)
+          if (chassis_error)
+            return res.status(500).send("upload chassis image error")
+        }
+        var slip_error = await slipimage.mv(__dirname + baseImagePath + `/${orderId}/${slipimage.name}`)
+        if (slip_error)
+          return res.status(500).send("upload slip image error")
+        res.send(orderId)
+      }
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+}
+
+exports.search_order_master_by_id = async (req, res) => {
+  try {
+    let order_id = req.query['orderid']
+    let sql = `SELECT order_id , status , last_update , fullname , amount FROM order_master WHERE order_id = '${order_id}'`
+    let r1 = await pgcon.get(sql)
+    if (r1.code) {
+      res.status(500).send('Query error : ' + r1.message)
+    } else {
+      res.send(r1)
+    }
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message);
+  }
+}

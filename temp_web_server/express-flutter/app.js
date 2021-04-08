@@ -7,12 +7,14 @@ const serviceRouter = require("./api/index");
 var app = express();
 var cors = require("cors");
 const moment = require('moment')
+const fileupload = require("express-fileupload")
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
 app.set("view engine", "jade");
 app.use(cors());
 app.use(logger("dev"));
+app.use(fileupload());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());

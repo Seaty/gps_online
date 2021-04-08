@@ -3,11 +3,15 @@ import 'package:gps_selling/locator.dart';
 import 'package:gps_selling/orderMenu/orderData.dart';
 import 'package:gps_selling/routing/router.dart';
 import 'package:gps_selling/services/navigation_service.dart';
+import 'package:intl/intl.dart';
 
 class OrderConfirmPage extends StatelessWidget {
+  final f = new DateFormat('yyyy-MM-dd HH:mm');
+
   @override
   Widget build(BuildContext context) {
     double screenWidth = MediaQuery.of(context).size.width;
+    final String args = ModalRoute.of(context).settings.arguments;
     return Scaffold(
       body: Center(
         child: Container(
@@ -52,7 +56,7 @@ class OrderConfirmPage extends StatelessWidget {
                       child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "DTC0092503",
+                      args,
                       style: TextStyle(
                         color: Color(0xFF00AEF0),
                         fontSize: checkscreenwidth(screenWidth, 36.67),
@@ -82,7 +86,7 @@ class OrderConfirmPage extends StatelessWidget {
                       child: Align(
                     alignment: Alignment.centerLeft,
                     child: Text(
-                      "30-04-2020 10:20",
+                      f.format(DateTime.now()),
                       style: TextStyle(
                         color: Color(0xFF00AEF0),
                         fontSize: checkscreenwidth(screenWidth, 36.67),

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:gps_selling/homeMenu/homeData.dart';
+import 'package:gps_selling/locator.dart';
+import 'package:gps_selling/routing/router.dart';
+import 'package:gps_selling/services/navigation_service.dart';
 import 'package:modal_bottom_sheet/modal_bottom_sheet.dart';
 import 'package:custom_radio_grouped_button/custom_radio_grouped_button.dart';
 
@@ -16,7 +19,9 @@ class HomeBottomNavBar extends StatelessWidget {
           Expanded(
             flex: 2,
             child: TextButton.icon(
-              onPressed: () {},
+              onPressed: () {
+                locator<NavigationService>().navigateTo(OrderCheckMainRoute);
+              },
               icon: Icon(
                 Icons.call,
                 size: checkscreenwidth(screenWidth, 18.33),

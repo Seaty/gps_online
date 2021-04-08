@@ -5,13 +5,18 @@ class NavigationService {
   final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
   Future<dynamic> navigateTo(String routeName,
-      {Map<String, String> queryParams, HistoryData historydata}) {
+      {Map<String, String> queryParams,
+      HistoryData historydata,
+      String orderId}) {
     if (queryParams != null) {
       routeName = Uri(path: routeName, queryParameters: queryParams).toString();
     }
-
-    return navigatorKey.currentState
-        .pushNamed(routeName, arguments: historydata);
+    if (orderId != null) {
+      return navigatorKey.currentState.pushNamed(routeName, arguments: orderId);
+    } else {
+      return navigatorKey.currentState
+          .pushNamed(routeName, arguments: historydata);
+    }
   }
 
   void goBack() {

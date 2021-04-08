@@ -17,39 +17,44 @@ const String ConfirmOrderRoute = "/confirm";
 const String OrderCheckMainRoute = "/checking";
 const String HistoryMainRoute = "/history";
 const String HistoryDetailRoute = "/detail";
-// ignore: missing_return
+
 Route<dynamic> generateRoute(RouteSettings setting) {
   // var routingData = setting.name.getRoutingData;
+
   switch (setting.name) {
     case HomeRoute:
-      return _getPageRoute(HomeScreenPage());
+      return _getPageRoute(HomeScreenPage(), setting);
     case LoginRoute:
-      return _getPageRoute(HomeScreenPage());
+      return _getPageRoute(HomeScreenPage(), setting);
     case BuyInfoRoute:
-      return _getPageRoute(BuyMainPage());
+      return _getPageRoute(BuyMainPage(), setting);
     case VideoRoute:
-      return _getPageRoute(VideoApp());
+      return _getPageRoute(VideoApp(), setting);
     case ConfirmOrderRoute:
-      return _getPageRoute(OrderConfirmPage());
+      return _getPageRoute(OrderConfirmPage(), setting);
     case OrderCheckMainRoute:
-      return _getPageRoute(OrderCheckMainPage());
+      return _getPageRoute(OrderCheckMainPage(), setting);
     case HistoryMainRoute:
-      return _getPageRoute(HistoryMainPage());
+      return _getPageRoute(HistoryMainPage(), setting);
     case HistoryDetailRoute:
-      return _getPageRoute(HistoryDetailPage(getData: setting.arguments));
+      return _getPageRoute(
+          HistoryDetailPage(getData: setting.arguments), setting);
     default:
-      return _getPageRoute(NotfoundPage());
+      return _getPageRoute(NotfoundPage(), setting);
   }
 }
 
-PageRoute _getPageRoute(Widget child) {
-  return _FadeRoute(child: child);
+PageRoute _getPageRoute(Widget child, RouteSettings settings) {
+  return _FadeRoute(child: child,setting:settings);
 }
 
 class _FadeRoute extends PageRouteBuilder {
   final Widget child;
-  _FadeRoute({this.child})
+  final RouteSettings setting;
+  _FadeRoute({this.child, this.setting})
       : super(
+          settings:
+              RouteSettings(name: setting.name, arguments: setting.arguments),
           pageBuilder: (BuildContext context, Animation<double> animation,
                   Animation<double> secondaryAnimation) =>
               child,

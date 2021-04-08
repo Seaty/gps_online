@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gps_selling/buyMenu/buyModel.dart';
 import 'package:gps_selling/homeMenu/homeData.dart';
 import 'package:gps_selling/locator.dart';
 import 'package:gps_selling/services/api.dart';
@@ -93,4 +94,10 @@ Future<dynamic> onTambonChange(province, amphur, tambon) async {
     print(e);
     return "";
   }
+}
+
+Future<dynamic> confirmOrderProcess(Map<String, dynamic> data) async {
+  BuyData bodyData = BuyData.fromJson(data);
+  var result = await _api.sendConfirmOrder(bodyData);
+  return result;
 }

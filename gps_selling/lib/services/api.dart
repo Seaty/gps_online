@@ -1,3 +1,4 @@
+import 'package:gps_selling/buyMenu/buyModel.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert' as convert;
 import 'package:gps_selling/services/fb_model.dart';
@@ -12,7 +13,6 @@ class Api {
   Future<dynamic> getUserData() async {
     try {
       accessToken = await FacebookAuth.instance.accessToken;
-      print(accessToken.token);
       if (accessToken != null) {
         if (accessToken.isExpired) {
           bool checkLogin = await fbLoginCheck();
@@ -23,9 +23,8 @@ class Api {
         var response =
             await http.get("$_apiEndpoint/get_user_data?id=${userData.id}");
         if (response.statusCode == 200) {
-          var userData = convert.jsonDecode(response.body);
-          print(userData);
-          return userData;
+          var dbData = convert.jsonDecode(response.body);
+          return dbData;
         }
         return "can't get user data";
       }
@@ -91,6 +90,40 @@ class Api {
     } catch (e) {
       print(e);
       return [];
+    }
+  }
+
+  Future<dynamic> sendConfirmOrder(BuyData data) async {
+    try {
+      http.MultipartFile slipFile = http.MultipartFile.fromBytes(
+        'slipimage',
+        data.slipImage,
+        filename: 'slipfile.png',
+      );
+      var request = new http.MultipartRequest(
+        "POST",
+        Uri.parse("$_apiEndpoint/createNewOrder"),
+      )
+        ..fields['data'] = buyDataToBodyJson(data)
+        ..files.add(slipFile);
+
+      if (data.chassisImage != null) {
+        http.MultipartFile chassisFile = http.MultipartFile.fromBytes(
+          'chassisimage',
+          data.chassisImage,
+          filename: 'chassisfile.png',
+        );
+        request.files.add(chassisFile);
+      }
+      var response = await http.Response.fromStream(await request.send());
+      if (response.statusCode == 200) {
+        return response.body;
+      } else {
+        return false;
+      }
+    } catch (e) {
+      print(e);
+      return false;
     }
   }
 }

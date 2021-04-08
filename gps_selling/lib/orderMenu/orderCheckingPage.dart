@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:gps_selling/locator.dart';
 import 'package:gps_selling/orderMenu/orderData.dart';
 import 'package:gps_selling/orderMenu/orderDetailPart.dart';
+import 'package:gps_selling/routing/router.dart';
+import 'package:gps_selling/services/navigation_service.dart';
 
 class OrderCheckMainPage extends StatefulWidget {
   @override
@@ -23,9 +26,11 @@ class _OrderCheckMainPageState extends State<OrderCheckMainPage> {
     double screenWidth = MediaQuery.of(context).size.width;
     return Scaffold(
       appBar: AppBar(
-        title: Text("ระบบค้นหาและติดตามสินค้า"),
-        leading: Container(),
-      ),
+          title: Text("ระบบค้นหาและติดตามสินค้า"),
+          leading: IconButton(
+              icon: Icon(Icons.home),
+              onPressed: () =>
+                  locator<NavigationService>().navigateTo(HomeRoute))),
       body: GestureDetector(
         onTap: () {
           FocusScope.of(context).unfocus();
