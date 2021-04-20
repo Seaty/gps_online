@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
+import 'package:gps_selling/buyMenu/buyData.dart';
 import 'package:gps_selling/locator.dart';
 import 'package:gps_selling/orderMenu/orderData.dart';
 import 'package:gps_selling/orderMenu/orderDetailPart.dart';
@@ -33,7 +34,10 @@ class _OrderCheckMainPageState extends State<OrderCheckMainPage> {
                   locator<NavigationService>().navigateTo(HomeRoute))),
       body: GestureDetector(
         onTap: () {
-          FocusScope.of(context).unfocus();
+          FocusScopeNode currentFocus = FocusScope.of(context);
+          if (!currentFocus.hasPrimaryFocus) {
+            currentFocus.unfocus();
+          }
         },
         child: FormBuilder(
           key: _formKey,
@@ -44,12 +48,49 @@ class _OrderCheckMainPageState extends State<OrderCheckMainPage> {
                 margin: EdgeInsets.all(
                   checkscreenwidth(screenWidth, 55),
                 ),
-                child: TextField(
+                child: FormBuilderTextField(
+                  name: 'orderId',
                   decoration: InputDecoration(
-                    labelText: 'ค้นหาออเดอร์',
+                    labelText: "กรุณาระบุเลขออเดอร์",
                     hintText: 'กรุณาระบุเลขออเดอร์',
+                    isDense: true,
+                    contentPadding: EdgeInsets.symmetric(
+                        vertical: checkscreenwidth(screenWidth, 55),
+                        horizontal: checkscreenwidth(screenWidth, 55)),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Color(0xFF49ADEA), width: 1.0),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Color(0xFF464646), width: 1.0),
+                    ),
+                    errorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+                    ),
+                    focusedErrorBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.red, width: 1.0),
+                    ),
+                    disabledBorder: OutlineInputBorder(
+                      borderSide:
+                          BorderSide(color: Color(0xFFD5D5D5), width: 1.0),
+                    ),
                   ),
+                  onChanged: (values) {
+                    // อ่านค่าจาก form _formKey.currentState.fields['orderId'].value;
+                  },
+                  validator: FormBuilderValidators.compose([
+                    FormBuilderValidators.required(context,
+                        errorText: "กรุณาระบุเลขออเดอร์"),
+                  ]),
+                  keyboardType: TextInputType.name,
                 ),
+                // TextField(
+                //   decoration: InputDecoration(
+                //     labelText: 'ค้นหาออเดอร์',
+                //     hintText: 'กรุณาระบุเลขออเดอร์',
+                //   ),
+                // ),
               ),
               Container(
                   margin: EdgeInsets.all(

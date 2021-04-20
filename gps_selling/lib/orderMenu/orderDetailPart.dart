@@ -123,16 +123,16 @@ class _OrderDetailPartState extends State<OrderDetailPart> {
                   NumberStepper(
                     numbers: [1, 2, 3, 4, 5],
                     // เทสเปลี่ยนสถาณะ
-                    // steppingEnabled: false,
-                    // enableNextPreviousButtons: false,
-                    // enableStepTapping: false,
+                    steppingEnabled: false,
+                    enableNextPreviousButtons: false,
+                    enableStepTapping: false,
                     activeStepColor: showingData.statusColor(),
-                    onStepReached: (values) {
-                      setState(() {
-                        print(values);
-                        showingData.status = values;
-                      });
-                    },
+                    // onStepReached: (values) {
+                    //   setState(() {
+                    //     print(values);
+                    //     showingData.status = values;
+                    //   });
+                    // },
                     activeStep: showingData.status,
                     stepRadius: checkscreenwidth(screenWidth, 31.42),
                   ),

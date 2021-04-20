@@ -1,7 +1,7 @@
 var express = require("express");
 const service = require("./service_api");
-// var router = express.Router();
-var router = express();
+var router = express.Router();
+// var router = express();
 
 
 router.post("/check_fb_data", service.fb_login);

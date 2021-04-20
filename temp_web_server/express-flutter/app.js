@@ -4,6 +4,7 @@ var path = require("path");
 var cookieParser = require("cookie-parser");
 var logger = require("morgan");
 const serviceRouter = require("./api/index");
+const downloadRouter = require("./api/download_service");
 var app = express();
 var cors = require("cors");
 const moment = require('moment')
@@ -23,6 +24,7 @@ app.use(function (req, res, next) {
   next()
 });
 app.use("/", serviceRouter);
+app.use("/download", downloadRouter);
 app.use(express.static(path.join(__dirname, "public")));
 
 app.use(function (req, res, next) {
